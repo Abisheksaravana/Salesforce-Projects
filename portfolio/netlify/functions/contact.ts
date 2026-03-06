@@ -116,6 +116,9 @@ const handler: Handler = async (event: HandlerEvent) => {
     const token = await getSFToken();
     const url = `${token.instance_url}/services/data/v59.0/sobjects/Contact_Submission__c`;
 
+    const [firstName, ...rest] = name.trim().split(' ');
+    const lastName = rest.join(' ') || firstName;
+
     const res = await fetch(url, {
       method: 'POST',
       headers: {
@@ -123,11 +126,12 @@ const handler: Handler = async (event: HandlerEvent) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        Name: name.trim().slice(0, 80),
+        First_Name__c: firstName.slice(0, 80),
+        Last_Name__c: lastName.slice(0, 80),
         Email__c: email.trim(),
         Subject__c: (subject?.trim() || 'Portfolio Contact').slice(0, 255),
         Message__c: message.trim(),
-        Submission_Date__c: new Date().toISOString(),
+        Submitted_Date__c: new Date().toISOString(),
         Status__c: 'New',
       }),
     });
