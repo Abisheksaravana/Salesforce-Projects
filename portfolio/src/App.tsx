@@ -10,15 +10,15 @@ import Contact from './pages/Contact';
 export default function App() {
   return (
     <BrowserRouter>
-      <div className="min-h-screen flex flex-col bg-gray-50 text-gray-900">
+      <div className="min-h-screen flex flex-col text-white">
         <Navbar />
         <div className="flex-1">
           <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/projects" element={<Projects />} />
-            <Route path="/skills" element={<Skills />} />
-            <Route path="/experience" element={<Experience />} />
-            <Route path="/contact" element={<Contact />} />
+            <Route path="/"            element={<Home />} />
+            <Route path="/projects"    element={<Projects />} />
+            <Route path="/skills"      element={<Skills />} />
+            <Route path="/experience"  element={<Experience />} />
+            <Route path="/contact"     element={<Contact />} />
           </Routes>
         </div>
         <Footer />

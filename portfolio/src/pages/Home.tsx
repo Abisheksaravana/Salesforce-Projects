@@ -1,25 +1,53 @@
 import { Link } from 'react-router-dom';
+import { useScrollAnimation } from '../hooks/useScrollAnimation';
 import { useSalesforce } from '../hooks/useSalesforce';
 import type { SFPortfolio } from '../types/salesforce';
 
-function PortfolioCard({ portfolio }: { portfolio: SFPortfolio }) {
+function SFCloud({ className }: { className?: string }) {
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-5 flex flex-col hover:shadow-md transition-shadow">
-      <h3 className="text-base font-semibold text-gray-900 mb-2">{portfolio.Name}</h3>
-      {portfolio.Profile_Summary__c && (
-        <p className="text-sm text-gray-600 mb-4 flex-1 line-clamp-2">{portfolio.Profile_Summary__c}</p>
-      )}
-      <div className="flex flex-col gap-1 mt-auto">
+    <svg className={className} viewBox="0 0 46 30" fill="currentColor">
+      <path d="M37.5 11.8c.1-.5.2-1 .2-1.5C37.7 6 34.2 2.5 30 2.5c-1.6 0-3 .5-4.2 1.3C24.4 2 22.3 1 20 1
+               c-4.2 0-7.6 3.1-8.1 7.1C10 8.2 8 8.5 6.4 9.5 4.6 10.7 3.5 12.7 3.5 15c0 3.6 2.9 6.5 6.5 6.5H36
+               c3.6 0 6.5-2.9 6.5-6.5 0-2.5-1.4-4.7-3.5-5.8-.5.2-.9.4-1.5.6z"/>
+    </svg>
+  );
+}
+
+function StatCard({ value, label, delay }: { value: string; label: string; delay: 1 | 2 | 3 | 4 }) {
+  const ref = useScrollAnimation(delay);
+  return (
+    <div ref={ref} className="glass card-glow rounded-2xl p-6 text-center border border-white/10">
+      <div className="text-3xl font-bold gradient-text mb-1">{value}</div>
+      <div className="text-white/60 text-sm">{label}</div>
+    </div>
+  );
+}
+
+function FeaturedCard({ portfolio, delay }: { portfolio: SFPortfolio; delay: 1 | 2 | 3 | 4 }) {
+  const ref = useScrollAnimation(delay);
+  return (
+    <div ref={ref} className="group relative overflow-hidden glass card-glow rounded-2xl border border-white/10 p-6 flex flex-col min-h-[180px]">
+      {/* Default */}
+      <div className="flex flex-col gap-2 transition-all duration-300 group-hover:opacity-0">
+        <div className="flex items-center gap-2 mb-2">
+          <SFCloud className="w-6 h-4 text-[#00A1E0]" />
+          <span className="text-xs text-[#00A1E0] font-medium uppercase tracking-wider">Project</span>
+        </div>
+        <h3 className="text-white font-semibold text-lg">{portfolio.Name}</h3>
         {portfolio.Email__c && (
-          <a
-            href={`mailto:${portfolio.Email__c}`}
-            className="text-sm text-blue-600 hover:underline"
-          >
+          <span className="text-white/50 text-sm">{portfolio.Email__c}</span>
+        )}
+      </div>
+      {/* Hover reveal */}
+      <div className="absolute inset-0 translate-y-full group-hover:translate-y-0 transition-transform duration-400 ease-out bg-gradient-to-br from-[#00A1E0]/20 to-[#032D60]/40 backdrop-blur-sm p-6 flex flex-col justify-center rounded-2xl">
+        <h3 className="text-white font-bold text-lg mb-3">{portfolio.Name}</h3>
+        {portfolio.Profile_Summary__c && (
+          <p className="text-white/80 text-sm leading-relaxed">{portfolio.Profile_Summary__c}</p>
+        )}
+        {portfolio.Email__c && (
+          <a href={`mailto:${portfolio.Email__c}`} className="mt-3 text-[#00A1E0] text-sm hover:underline">
             {portfolio.Email__c}
           </a>
-        )}
-        {portfolio.Phone__c && (
-          <span className="text-sm text-gray-500">{portfolio.Phone__c}</span>
         )}
       </div>
     </div>
@@ -29,45 +57,95 @@ function PortfolioCard({ portfolio }: { portfolio: SFPortfolio }) {
 export default function Home() {
   const { data: portfolios } = useSalesforce<SFPortfolio>('projects');
   const featured = portfolios.slice(0, 3);
+  const statsRef = useScrollAnimation();
+  const featuredRef = useScrollAnimation();
 
   return (
-    <main>
-      {/* Hero */}
-      <section className="max-w-4xl mx-auto px-4 py-24 text-center">
-        <h1 className="text-5xl font-bold text-gray-900 mb-4">
-          Hi, I'm a Developer
+    <main className="overflow-hidden">
+
+      {/* ── Hero ── */}
+      <section className="relative min-h-[92vh] flex flex-col items-center justify-center px-6 text-center">
+
+        {/* Floating background clouds */}
+        <SFCloud className="absolute top-16 left-10 w-24 opacity-5 cloud-float text-[#00A1E0]" />
+        <SFCloud className="absolute top-32 right-16 w-40 opacity-5 cloud-float-slow text-[#00A1E0]" />
+        <SFCloud className="absolute bottom-24 left-1/4 w-20 opacity-5 cloud-float text-[#00A1E0]" />
+        <SFCloud className="absolute bottom-16 right-1/3 w-32 opacity-5 cloud-float-slow text-[#00A1E0]" />
+
+        {/* Glow orbs */}
+        <div className="absolute top-1/3 left-1/4 w-96 h-96 bg-[#00A1E0]/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-1/3 right-1/4 w-64 h-64 bg-[#1798C1]/10 rounded-full blur-3xl pointer-events-none" />
+
+        {/* Badge */}
+        <div className="fade-in mb-6 inline-flex items-center gap-2 glass rounded-full px-4 py-2 border border-[#00A1E0]/30 glow-pulse">
+          <SFCloud className="w-5 h-3.5 text-[#00A1E0]" />
+          <span className="text-[#00A1E0] text-sm font-medium">Salesforce Developer</span>
+        </div>
+
+        {/* Name */}
+        <h1 className="fade-in text-6xl md:text-7xl font-extrabold text-white mb-4 leading-tight tracking-tight">
+          Hi, I'm{' '}
+          <span className="gradient-text">Abishek</span>
         </h1>
-        <p className="text-xl text-gray-500 mb-8 max-w-xl mx-auto">
-          I build things for the web. Here's some of my work.
+
+        {/* Tagline */}
+        <p className="fade-in text-white/60 text-xl md:text-2xl mb-3 max-w-2xl leading-relaxed">
+          Salesforce Developer with{' '}
+          <span className="text-[#00A1E0] font-semibold">4.5 years</span> of experience building
+          scalable CRM solutions on the Salesforce platform.
         </p>
-        <div className="flex gap-4 justify-center flex-wrap">
+        <p className="fade-in text-white/40 text-sm mb-10 max-w-xl">
+          Apex • LWC • Flow • Integrations • Agentforce
+        </p>
+
+        {/* CTAs */}
+        <div className="fade-in flex gap-4 flex-wrap justify-center mb-20">
           <Link
             to="/projects"
-            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg transition-colors text-sm"
+            className="bg-[#00A1E0] hover:bg-[#1798C1] text-white font-semibold px-8 py-3 rounded-xl transition-all duration-200 hover:shadow-lg hover:shadow-[#00A1E0]/30 hover:-translate-y-0.5"
           >
             View Projects
           </Link>
           <Link
             to="/contact"
-            className="border border-gray-300 hover:border-blue-400 text-gray-700 font-semibold px-6 py-3 rounded-lg transition-colors text-sm"
+            className="glass border border-[#00A1E0]/40 hover:border-[#00A1E0] text-white font-semibold px-8 py-3 rounded-xl transition-all duration-200 hover:bg-[#00A1E0]/10"
           >
             Contact Me
           </Link>
         </div>
+
+        {/* Scroll indicator */}
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 text-white/30 text-xs">
+          <span>Scroll</span>
+          <div className="w-px h-8 bg-gradient-to-b from-[#00A1E0]/50 to-transparent" />
+        </div>
       </section>
 
-      {/* Featured projects */}
+      {/* ── Stats ── */}
+      <section className="max-w-4xl mx-auto px-6 pb-20">
+        <div ref={statsRef} className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <StatCard value="4.5+" label="Years Experience" delay={1} />
+          <StatCard value="20+" label="Projects Delivered" delay={2} />
+          <StatCard value="10+" label="Certifications" delay={3} />
+          <StatCard value="100%" label="Customer Focus" delay={4} />
+        </div>
+      </section>
+
+      {/* ── Featured Projects ── */}
       {featured.length > 0 && (
-        <section className="max-w-6xl mx-auto px-4 pb-20">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-gray-900">Featured Work</h2>
-            <Link to="/projects" className="text-sm text-blue-600 hover:underline">
-              View all →
+        <section className="max-w-6xl mx-auto px-6 pb-28">
+          <div ref={featuredRef} className="flex items-center justify-between mb-8">
+            <div>
+              <h2 className="text-3xl font-bold text-white">Featured Work</h2>
+              <p className="text-white/50 text-sm mt-1">Hover cards to explore</p>
+            </div>
+            <Link to="/projects" className="text-sm text-[#00A1E0] hover:text-white transition-colors flex items-center gap-1">
+              View all <span>→</span>
             </Link>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {featured.map((p) => (
-              <PortfolioCard key={p.Id} portfolio={p} />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {featured.map((p, i) => (
+              <FeaturedCard key={p.Id} portfolio={p} delay={((i % 4) + 1) as 1 | 2 | 3 | 4} />
             ))}
           </div>
         </section>
