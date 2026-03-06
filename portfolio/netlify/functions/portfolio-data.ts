@@ -15,7 +15,9 @@ async function getSFToken(): Promise<SFToken> {
   const now = Date.now();
   if (cachedToken && now < tokenExpiresAt) return cachedToken;
 
-  const privateKey = process.env.SALESFORCE_PRIVATE_KEY!.replace(/\\n/g, '\n');
+  const privateKey = process.env.SALESFORCE_PRIVATE_KEY!
+    .replace(/^['"]|['"]$/g, '')  // strip surrounding quotes if any
+    .replace(/\\n/g, '\n');       // convert escaped \n to real newlines
 
   const assertion = jwt.sign(
     {
