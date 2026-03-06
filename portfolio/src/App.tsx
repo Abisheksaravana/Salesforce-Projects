@@ -6,6 +6,7 @@ import Projects from './pages/Projects';
 import Skills from './pages/Skills';
 import Experience from './pages/Experience';
 import Contact from './pages/Contact';
+import AgentforceChat from './components/AgentforceChat';
 
 export default function App() {
   return (
@@ -22,6 +23,7 @@ export default function App() {
           </Routes>
         </div>
         <Footer />
+        <AgentforceChat />
       </div>
     </BrowserRouter>
   );
