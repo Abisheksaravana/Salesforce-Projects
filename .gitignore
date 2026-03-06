@@ -1,0 +1,30 @@
+# Local Netlify folder
+.netlify
+
+# Dependencies
+node_modules/
+portfolio/node_modules/
+
+# Build output
+dist/
+portfolio/dist/
+
+# Environment variables — NEVER commit real secrets
+.env
+.env.local
+.env.*.local
+portfolio/.env
+portfolio/.env.local
+portfolio/.env.*.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
