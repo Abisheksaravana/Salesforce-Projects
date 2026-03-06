@@ -58,14 +58,19 @@ async function getSFToken(): Promise<SFToken> {
 
 const QUERIES: Record<string, string> = {
   projects: `
-    SELECT Id, Name, Phone__c, Email__c, Profile_Summary__c FROM Portfolio__c
+    SELECT Id, Name, Summary_Details__c, Tech_Stack__c, Demo_URL__c, Repo_URL__c, Work_Experience__c
+    FROM Project__c
+    ORDER BY Name ASC
   `,
   skills: `
-    SELECT Id,Name, Level__c,Percent__c, Points__c, Portfolio__c, Tags__c  from Skill__c 
-    ORDER BY Category__c ASC, Sort_Order__c ASC NULLS LAST
+    SELECT Id, Name, Level__c, Percent__c, Points__c, Portfolio__c, Tags__c
+    FROM Skill__c
+    ORDER BY Percent__c DESC NULLS LAST
   `,
   experience: `
-    SELECT Id, Company__c, Name, Role__c, Start_Date__c from Work_Experience__c 
+    SELECT Id, Name, Company__c, Role__c, Start_Date__c, End_Date__c, Is_Current__c, Description__c,
+      (SELECT Id, Name, Summary_Details__c, Tech_Stack__c, Demo_URL__c, Repo_URL__c FROM Projects__r ORDER BY Name ASC)
+    FROM Work_Experience__c
     ORDER BY Is_Current__c DESC, Start_Date__c DESC
   `,
 };

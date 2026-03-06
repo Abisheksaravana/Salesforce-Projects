@@ -1,6 +1,6 @@
 import { useSalesforce } from '../hooks/useSalesforce';
 import { useScrollAnimation } from '../hooks/useScrollAnimation';
-import type { SFWorkExperience } from '../types/salesforce';
+import type { SFWorkExperience, SFProject } from '../types/salesforce';
 
 function formatDate(dateStr: string | null): string {
   if (!dateStr) return '';
@@ -12,56 +12,93 @@ function getInitials(company: string | null): string {
   return company.split(' ').map((w) => w[0]).join('').slice(0, 2).toUpperCase();
 }
 
+function ProjectPill({ project }: { project: SFProject }) {
+  return (
+    <div className="flex items-start gap-1.5 py-1">
+      <div className="w-1 h-1 rounded-full bg-[#00A1E0] mt-1.5 shrink-0" />
+      <span className="text-white/80 text-xs leading-snug">{project.Name}</span>
+    </div>
+  );
+}
+
 function ExperienceCard({ exp, delay }: { exp: SFWorkExperience; delay: 1 | 2 | 3 | 4 }) {
   const ref = useScrollAnimation(delay);
   const startLabel = formatDate(exp.Start_Date__c);
+  const endLabel = exp.Is_Current__c ? 'Present' : formatDate(exp.End_Date__c);
   const initials = getInitials(exp.Company__c);
+  const projects = exp.Projects__r?.records ?? [];
 
   return (
     <div
       ref={ref}
       className="group relative overflow-hidden glass card-glow rounded-2xl border border-white/10 cursor-pointer"
-      style={{ minHeight: '160px' }}
+      style={{ minHeight: '220px' }}
     >
       {/* Default face */}
       <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 p-6 transition-all duration-300 group-hover:opacity-0 group-hover:scale-90">
-        {/* Company logo placeholder */}
-        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#00A1E0]/30 to-[#032D60]/60 border border-[#00A1E0]/30 flex items-center justify-center">
-          <span className="text-[#00A1E0] font-bold text-lg">{initials}</span>
+        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#00A1E0]/30 to-[#032D60]/60 border border-[#00A1E0]/30 flex items-center justify-center">
+          <span className="text-[#00A1E0] font-bold text-xl">{initials}</span>
         </div>
         <div className="text-center">
-          <p className="text-white font-semibold text-sm">{exp.Company__c ?? 'Company'}</p>
-          {exp.Role__c && (
-            <p className="text-white/50 text-xs mt-0.5">{exp.Role__c}</p>
+          <p className="text-white font-bold text-sm">{exp.Company__c ?? 'Company'}</p>
+          {exp.Role__c && <p className="text-white/50 text-xs mt-0.5">{exp.Role__c}</p>}
+          {exp.Is_Current__c && (
+            <span className="inline-block mt-1.5 text-xs bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-full px-2 py-0.5">
+              Current
+            </span>
           )}
         </div>
+        {projects.length > 0 && (
+          <div className="flex items-center gap-1 text-white/30 text-xs">
+            <span>📁</span>
+            <span>{projects.length} project{projects.length > 1 ? 's' : ''}</span>
+          </div>
+        )}
       </div>
 
       {/* Hover reveal */}
-      <div className="absolute inset-0 translate-y-full group-hover:translate-y-0 transition-transform duration-400 ease-out bg-gradient-to-br from-[#00A1E0]/20 to-[#032D60]/60 backdrop-blur-sm p-6 flex flex-col justify-center gap-3 rounded-2xl">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#00A1E0]/20 border border-[#00A1E0]/30 flex items-center justify-center shrink-0">
-            <span className="text-[#00A1E0] font-bold text-sm">{initials}</span>
+      <div className="absolute inset-0 translate-y-full group-hover:translate-y-0 transition-transform duration-400 ease-out bg-gradient-to-br from-[#00A1E0]/20 to-[#032D60]/70 backdrop-blur-sm p-5 flex flex-col gap-2 rounded-2xl overflow-y-auto">
+        {/* Header */}
+        <div className="flex items-center gap-2.5 mb-1">
+          <div className="w-9 h-9 rounded-xl bg-[#00A1E0]/20 border border-[#00A1E0]/30 flex items-center justify-center shrink-0">
+            <span className="text-[#00A1E0] font-bold text-xs">{initials}</span>
           </div>
           <div>
-            <p className="text-white font-bold text-sm">{exp.Company__c ?? 'Company'}</p>
-            {exp.Role__c && (
-              <p className="text-[#00A1E0] text-xs font-medium">{exp.Role__c}</p>
-            )}
+            <p className="text-white font-bold text-sm leading-tight">{exp.Company__c ?? 'Company'}</p>
+            {exp.Role__c && <p className="text-[#00A1E0] text-xs">{exp.Role__c}</p>}
           </div>
+          {exp.Is_Current__c && (
+            <span className="ml-auto text-xs bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-full px-2 py-0.5 shrink-0">
+              Current
+            </span>
+          )}
         </div>
 
-        {startLabel && (
-          <div className="flex items-center gap-2">
-            <div className="w-1.5 h-1.5 rounded-full bg-[#00A1E0]" />
-            <span className="text-white/60 text-xs">Started {startLabel}</span>
-          </div>
+        {/* Dates */}
+        {(startLabel || endLabel) && (
+          <p className="text-white/50 text-xs">
+            {startLabel}{startLabel && endLabel ? ' – ' : ''}{endLabel}
+          </p>
         )}
 
-        <div className="flex items-center gap-2">
-          <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-          <span className="text-emerald-400 text-xs font-medium">Salesforce Developer</span>
-        </div>
+        {/* Description */}
+        {exp.Description__c && (
+          <p className="text-white/60 text-xs leading-relaxed line-clamp-2">{exp.Description__c}</p>
+        )}
+
+        {/* Projects */}
+        {projects.length > 0 && (
+          <div className="mt-1 border-t border-white/10 pt-2">
+            <p className="text-[#00A1E0] text-xs font-semibold mb-1 uppercase tracking-wider">
+              Projects ({projects.length})
+            </p>
+            <div className="flex flex-col">
+              {projects.map((p) => (
+                <ProjectPill key={p.Id} project={p} />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -97,7 +134,7 @@ export default function Experience() {
           <span className="text-[#00A1E0] text-sm font-medium uppercase tracking-widest">🏢 Career</span>
         </div>
         <h1 className="text-5xl font-extrabold text-white mb-3">Experience</h1>
-        <p className="text-white/50 text-lg">Hover a card to see role details</p>
+        <p className="text-white/50 text-lg">Hover a company to see role &amp; projects</p>
       </div>
 
       {experience.length === 0 && (

@@ -1,9 +1,11 @@
-export interface SFPortfolio {
+export interface SFProject {
   Id: string;
   Name: string;
-  Phone__c: string | null;
-  Email__c: string | null;
-  Profile_Summary__c: string | null;
+  Summary_Details__c: string | null;
+  Tech_Stack__c: string | null;
+  Demo_URL__c: string | null;
+  Repo_URL__c: string | null;
+  Work_Experience__c: string | null;
 }
 
 export interface SFSkill {
@@ -22,4 +24,11 @@ export interface SFWorkExperience {
   Company__c: string | null;
   Role__c: string | null;
   Start_Date__c: string | null;
+  End_Date__c: string | null;
+  Is_Current__c: boolean;
+  Description__c: string | null;
+  Projects__r: { records: SFProject[] } | null;
 }
+
+// Legacy alias
+export type SFPortfolio = SFProject;
