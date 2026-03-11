@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useSalesforce } from '../hooks/useSalesforce';
 import { useScrollAnimation } from '../hooks/useScrollAnimation';
 import type { SFProject } from '../types/salesforce';
@@ -12,7 +13,101 @@ function SFCloud({ className }: { className?: string }) {
   );
 }
 
-function ProjectCard({ project, delay }: { project: SFProject; delay: 1 | 2 | 3 | 4 }) {
+function ProjectModal({ project, onClose }: { project: SFProject; onClose: () => void }) {
+  const techTags = project.Tech_Stack__c
+    ? project.Tech_Stack__c.split(',').map((t) => t.trim()).filter(Boolean)
+    : [];
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      onClick={onClose}
+    >
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+
+      {/* Modal */}
+      <div
+        className="relative z-10 w-full max-w-2xl glass border border-white/15 rounded-2xl shadow-2xl overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="bg-gradient-to-r from-[#00A1E0]/20 to-[#032D60]/60 px-6 py-5 flex items-start gap-4">
+          <div className="w-12 h-12 rounded-xl bg-[#00A1E0]/15 border border-[#00A1E0]/30 flex items-center justify-center shrink-0">
+            <SFCloud className="w-7 h-5 text-[#00A1E0]" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <span className="text-[#00A1E0] text-xs font-medium uppercase tracking-wider">Project</span>
+            <h2 className="text-white font-bold text-xl mt-0.5">{project.Name}</h2>
+          </div>
+          <button
+            onClick={onClose}
+            className="text-white/40 hover:text-white transition-colors text-xl leading-none shrink-0 mt-1"
+          >
+            ✕
+          </button>
+        </div>
+
+        {/* Body */}
+        <div className="px-6 py-5 max-h-[60vh] overflow-y-auto">
+          {project.Summary_Details__c && (
+            <div className="mb-5">
+              <p className="text-[#00A1E0] text-xs font-semibold uppercase tracking-wider mb-2">Description</p>
+              <div
+                className="text-white/80 text-sm leading-relaxed prose prose-invert max-w-none"
+                dangerouslySetInnerHTML={{ __html: project.Summary_Details__c }}
+              />
+            </div>
+          )}
+
+          {techTags.length > 0 && (
+            <div>
+              <p className="text-[#00A1E0] text-xs font-semibold uppercase tracking-wider mb-2">Tech Stack</p>
+              <div className="flex flex-wrap gap-2">
+                {techTags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="text-sm bg-[#00A1E0]/15 text-[#00A1E0] rounded-full px-3 py-1 border border-[#00A1E0]/20"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        {(project.Demo_URL__c || project.Repo_URL__c) && (
+          <div className="px-6 py-4 border-t border-white/10 flex gap-4">
+            {project.Demo_URL__c && (
+              <a
+                href={project.Demo_URL__c}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 text-sm text-[#00A1E0] hover:text-white transition-colors font-medium"
+              >
+                🔗 Live Demo
+              </a>
+            )}
+            {project.Repo_URL__c && (
+              <a
+                href={project.Repo_URL__c}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 text-sm text-[#00A1E0] hover:text-white transition-colors font-medium"
+              >
+                📁 Repository
+              </a>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function ProjectCard({ project, delay, onClick }: { project: SFProject; delay: 1 | 2 | 3 | 4; onClick: () => void }) {
   const ref = useScrollAnimation(delay);
   const techTags = project.Tech_Stack__c
     ? project.Tech_Stack__c.split(',').map((t) => t.trim()).filter(Boolean)
@@ -21,6 +116,7 @@ function ProjectCard({ project, delay }: { project: SFProject; delay: 1 | 2 | 3 
   return (
     <div
       ref={ref}
+      onClick={onClick}
       className="group relative overflow-hidden glass card-glow rounded-2xl border border-white/10 cursor-pointer"
       style={{ minHeight: '200px' }}
     >
@@ -38,7 +134,7 @@ function ProjectCard({ project, delay }: { project: SFProject; delay: 1 | 2 | 3 
       </div>
 
       {/* Hover reveal */}
-      <div className="absolute inset-0 translate-y-full group-hover:translate-y-0 transition-transform duration-400 ease-out bg-gradient-to-br from-[#00A1E0]/20 to-[#032D60]/60 backdrop-blur-sm p-5 flex flex-col justify-between rounded-2xl overflow-y-auto">
+      <div className="absolute inset-0 translate-y-full group-hover:translate-y-0 transition-transform duration-400 ease-out bg-gradient-to-br from-[#00A1E0]/20 to-[#032D60]/60 backdrop-blur-sm p-5 flex flex-col justify-between rounded-2xl overflow-hidden">
         <div>
           <div className="flex items-center gap-2 mb-2">
             <SFCloud className="w-4 h-3 text-[#00A1E0]" />
@@ -59,30 +155,7 @@ function ProjectCard({ project, delay }: { project: SFProject; delay: 1 | 2 | 3 
             </div>
           )}
         </div>
-        <div className="flex gap-3 mt-3">
-          {project.Demo_URL__c && (
-            <a
-              href={project.Demo_URL__c}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-xs text-[#00A1E0] hover:text-white transition-colors flex items-center gap-1"
-              onClick={(e) => e.stopPropagation()}
-            >
-              🔗 Demo
-            </a>
-          )}
-          {project.Repo_URL__c && (
-            <a
-              href={project.Repo_URL__c}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-xs text-[#00A1E0] hover:text-white transition-colors flex items-center gap-1"
-              onClick={(e) => e.stopPropagation()}
-            >
-              📁 Repo
-            </a>
-          )}
-        </div>
+        <p className="text-white/30 text-xs mt-3 text-center">Click to read more</p>
       </div>
     </div>
   );
@@ -91,6 +164,7 @@ function ProjectCard({ project, delay }: { project: SFProject; delay: 1 | 2 | 3 
 export default function Projects() {
   const { data: projects, loading, error } = useSalesforce<SFProject>('projects');
   const headerRef = useScrollAnimation();
+  const [selected, setSelected] = useState<SFProject | null>(null);
 
   if (loading) {
     return (
@@ -119,7 +193,7 @@ export default function Projects() {
           <span className="text-[#00A1E0] text-sm font-medium uppercase tracking-widest">Portfolio</span>
         </div>
         <h1 className="text-5xl font-extrabold text-white mb-3">Projects</h1>
-        <p className="text-white/50 text-lg">Hover a card to explore each project</p>
+        <p className="text-white/50 text-lg">Click a card to explore each project</p>
       </div>
 
       {projects.length === 0 && (
@@ -128,9 +202,18 @@ export default function Projects() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
         {projects.map((p, i) => (
-          <ProjectCard key={p.Id} project={p} delay={((i % 4) + 1) as 1 | 2 | 3 | 4} />
+          <ProjectCard
+            key={p.Id}
+            project={p}
+            delay={((i % 4) + 1) as 1 | 2 | 3 | 4}
+            onClick={() => setSelected(p)}
+          />
         ))}
       </div>
+
+      {selected && (
+        <ProjectModal project={selected} onClose={() => setSelected(null)} />
+      )}
     </main>
   );
 }
