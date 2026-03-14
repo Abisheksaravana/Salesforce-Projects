@@ -110,7 +110,7 @@ const handler: Handler = async (event: HandlerEvent) => {
       statusCode: 200,
       headers: {
         'Content-Type': 'application/json',
-        'Cache-Control': 'public, max-age=3600',
+        'Cache-Control': 'public, max-age=60, stale-while-revalidate=300',
       },
       body: JSON.stringify(records),
     };
